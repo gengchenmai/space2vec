@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Species Distribution Demo App</title>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site.css') }}" />
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row">
+          <div class="col-sm-2">
+            <a href="https://www.inaturalist.org/taxa/{{class_data['taxa_id']}}" target="_blank">
+              <img src="{{class_data['default_photo']}}" alt="{{class_data['our_name']}}" height="100">
+            </a>
+          </div>
+          <div class="col-sm-10">
+            <h3><a href="https://www.inaturalist.org/taxa/{{class_data['taxa_id']}}" target="_blank">{{class_data['our_name']}} - {{class_data['preferred_common_name']}}</a></h3>
+          </div>
+        </div>
+
+        <div class="row">
+            <div style="float:left;"><img id="distribution_im" src="//:0" alt="distribution" height="{{im_height}}px"></div>
+        </div>
+
+        <div class="row">
+          <div class="col-xs-8 slidecontainer">
+            <input class="slider" id="time_of_year_range" type="range" min="0" max="{{images|length-1}}" value="0" step="1" oninput="show_image(this.value)" onchange="show_image(this.value)" />
+            <span id="time_of_year">Jan</span>
+          </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+          <div class="col-xs-8">
+            <p>Type the name of a particular species or click "random".</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-xs-4 form-group">
+              <input name="autocomplete" type="text" id="autocomplete" class="form-control" placeholder="Search.."/>
+          </div>
+          <div class="col-xs-4 form-group">
+            <form method="post" action="/index">
+              <input type="text" name="class_of_interest" id="class_of_interest" hidden />
+              <input name="submit_btn" id="submit_btn" type="submit" class="btn btn-info" value="search">
+              <input name="submit_btn" id="random_btn" type="submit" class="btn btn-info" value="random">
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-xs-8">
+            <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#about">About</button>
+            <div id="about" class="collapse">
+              <p>Brighter colors indicate a higher probability of the selected species being present at a location.</p>
+              <p>Click on the species image or text on top to go to the corresponding iNaturalist species page.</p>
+              <p>This spatio-temporal prior has only been trained on the 8,142 categories and observation from the <a href="https://github.com/visipedia/inat_comp" target="_blank">iNat2018</a> training set.</p>
+            </div>
+          </div>
+        </div>
+
+
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+    <script>
+
+      var time_step_txt = [];
+      {% for item in time_steps_txt %}
+      time_step_txt[{{loop.index0}}] = "{{item}}";
+      {% endfor %}
+
+      var images = [];
+      {% for item in images %}
+      images[{{loop.index0}}] = "data:image/png;base64,{{item}}";
+      {% endfor %}
+
+      document.getElementById("distribution_im").src = images[0];
+      $("#class_of_interest").val('{{class_data["our_id"]}}');
+      $('#submit_btn').prop('disabled', true);
+
+      function show_image(im_id){
+        document.getElementById("time_of_year").innerHTML = time_step_txt[im_id];
+        document.getElementById("distribution_im").src = images[im_id];
+      }
+
+      $("#autocomplete").keyup(function() {
+        if (!this.value) {
+            $('#submit_btn').prop('disabled', true);
+        }
+      });
+
+      $(function() {
+          $("#autocomplete").autocomplete({
+              source:function(request, response) {
+                  $.getJSON("/autocomplete",{
+                      query: request.term,
+                  }, function(data) {
+                      response(data.matching_classes);
+                  });
+              },
+              minLength: 3,
+              select: function(event, ui) {
+                  $('#class_of_interest').val(ui.item.idx.toString());
+                  $('#submit_btn').prop('disabled', false);
+                  console.log(ui.item.value);
+                  console.log(ui.item.idx);
+              }
+          });
+      })
+
+    </script>
+
+</body>
+</html>
