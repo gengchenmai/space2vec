@@ -1,5 +1,5 @@
 # Multi-Scale Representation Learning for Spatial Feature Distributions using Grid Cells
-Code for recreating the results in our ICLR 2020 [paper](https://openreview.net/forum?id=rJljdh4KDH).
+Code for recreating the results in [our ICLR 2020 paper](https://openreview.net/forum?id=rJljdh4KDH).
 
 ## Motivation
 <p align="center">
@@ -19,6 +19,7 @@ This code contains two parts which are corresponding to two tasks in our paper:
 You can find the POI type classification dataset in `spacegraph/data_collection/Place2Vec_center/`.
 
 ### Code Usage
+This code is implemented in Python 2.7
 All codes about the POI type classification task are in `spacegraph/spacegraph_codebase/`.
 
 #### Location Modeling (See Section 5.1.1 and 5.1.2 in [our ICLR 2020 paper](https://openreview.net/forum?id=rJljdh4KDH))
@@ -29,6 +30,9 @@ You can train different models from different bash files in `spacegraph/`(See Ap
 4. `rbf`: run `bash Place2Vec_2_enc_dec_global_rbf.sh`.
 5. `gird`: run `bash Place2Vec_2_enc_dec_global_grid.sh`.
 6. `theory`: run `bash Place2Vec_2_enc_dec_global_theory.sh`.
+
+1) The trained model will be available in the directory you specified for `--model_dir`.
+2) The log including the evaluation results will be available in the directory you specified for `--log_dir`.
 
 ###### The Comparison Among the Response Maps of Different Models
 <p align="center">
@@ -48,6 +52,9 @@ You can train different models from different bash files in `spacegraph/`(See Ap
 9. `gird`: run `bash Place2Vec_2_enc_dec_grid.sh`.
 10. `theory`: run `bash Place2Vec_2_enc_dec_theory.sh`.
 
+1) The trained model will be available in the directory you specified for `--model_dir`.
+2) The log including the evaluation results will be available in the directory you specified for `--log_dir`.
+
 ###### The Comparison Among the Response Maps of Different Models
 <p align="center">
   <img src="res_fig/context_modeling.png" alt="context_modeling" width="1000" />
@@ -55,7 +62,7 @@ You can train different models from different bash files in `spacegraph/`(See Ap
 
 ## Geo-Aware Fine-Grained Image Classification Task
 
-`geo_prior/` folder contains codes for recreating the evaluation results of geo-aware fine-grained image classification task in our ICLR 2020 [paper](https://openreview.net/forum?id=rJljdh4KDH).
+`geo_prior/` folder contains codes for recreating the evaluation results of the geo-aware fine-grained image classification task in [our ICLR 2020 paper](https://openreview.net/forum?id=rJljdh4KDH).
 
 These codes are modified from [Mac Aodha et al.'s GitHub codebase](https://github.com/macaodha/geo_prior) in which we add multiple Space2Vec location encoder modules to capture the geographic priors information about images. 
 
@@ -66,13 +73,13 @@ These codes are modified from [Mac Aodha et al.'s GitHub codebase](https://githu
 
 
 ### Data
-In order to obatin the data, please go to [Mac Aodha et al.'s project website](http://www.vision.caltech.edu/~macaodha/projects/geopriors/index.html).
+In order to obtain the data, please go to [Mac Aodha et al.'s project website](http://www.vision.caltech.edu/~macaodha/projects/geopriors/index.html).
 
 ### Code Usage
 This code is implemented in Python 3
 `geo_prior/geo_prior/` contains the main code for training and evaluating models (We use BirdSnap† dataset as an example):
 1. `geo_prior/geo_prior/train_geo_net.py` is used to train the location encoder model. Run `python3 train_geo_net.py`. 
-2. `geo_prior/geo_prior/run_evaluation.py` is used to evalute the location encoder model by combining the pretrained CNN features.  Run `python3 run_evaluation.py`. 
+2. `geo_prior/geo_prior/run_evaluation.py` is used to evaluate the location encoder model by combining the pre-trained CNN features.  Run `python3 run_evaluation.py`. 
 
 
 
