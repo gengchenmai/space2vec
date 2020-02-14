@@ -80,7 +80,8 @@ These codes are modified from [Mac Aodha et al.'s GitHub codebase](https://githu
 In order to obtain the data, please go to [Mac Aodha et al.'s project website](http://www.vision.caltech.edu/~macaodha/projects/geopriors/index.html).
 
 ### Code Usage
-This code is implemented in Python 3
+This code is implemented in Python 3.
+
 `geo_prior/geo_prior/` contains the main code for training and evaluating models (We use BirdSnap† dataset as an example):
 1. `geo_prior/geo_prior/train_geo_net.py` is used to train the location encoder model. Run `python3 train_geo_net.py`. 
 2. `geo_prior/geo_prior/run_evaluation.py` is used to evaluate the location encoder model by combining the pre-trained CNN features.  Run `python3 run_evaluation.py`. 
