@@ -4,7 +4,7 @@
 from setuptools import setup, find_packages
 import sys
 
-with open('../readme.md') as f:
+with open('../README.md') as f:
     readme = f.read()
 
 with open('../LICENSE') as f:
