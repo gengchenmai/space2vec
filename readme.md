@@ -15,6 +15,8 @@ This code contains two parts which are corresponding to two tasks in our paper:
 - Torch 1.0.1+
 - Other required packages are summarized in `spacegraph/requirements.txt`.
 
+To set up the code for space2vec for POI Type classfication, run `python spacegraph/setup.py`.
+
 ### Data
 You can find the POI type classification dataset in `spacegraph/data_collection/Place2Vec_center/`.
 
@@ -31,8 +33,9 @@ You can train different models from different bash files in `spacegraph/`(See Ap
 5. `gird`: run `bash Place2Vec_2_enc_dec_global_grid.sh`.
 6. `theory`: run `bash Place2Vec_2_enc_dec_global_theory.sh`.
 
-1) The trained model will be available in the directory you specified for `--model_dir`.
-2) The log including the evaluation results will be available in the directory you specified for `--log_dir`.
+Results:
+1. The trained model will be available in the directory you specified for `--model_dir`.
+2. The log including the evaluation results will be available in the directory you specified for `--log_dir`.
 
 ###### The Comparison Among the Response Maps of Different Models
 <p align="center">
@@ -52,8 +55,9 @@ You can train different models from different bash files in `spacegraph/`(See Ap
 9. `gird`: run `bash Place2Vec_2_enc_dec_grid.sh`.
 10. `theory`: run `bash Place2Vec_2_enc_dec_theory.sh`.
 
-1) The trained model will be available in the directory you specified for `--model_dir`.
-2) The log including the evaluation results will be available in the directory you specified for `--log_dir`.
+Results:
+1. The trained model will be available in the directory you specified for `--model_dir`.
+2. The log including the evaluation results will be available in the directory you specified for `--log_dir`.
 
 ###### The Comparison Among the Response Maps of Different Models
 <p align="center">
