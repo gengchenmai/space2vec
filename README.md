@@ -6,6 +6,7 @@ Code for recreating the results in [our ICLR 2020 paper](https://openreview.net/
 2. [Arxiv Paper](https://arxiv.org/abs/2003.00824)
 3. [ICLR 2020 Presentation](https://www.youtube.com/watch?v=7hTtBXqea1E)
 4. [ICLR 2020 Presentation Slides](http://www.geog.ucsb.edu/~gengchen_mai/presentations/2020-ICLR2020-Space2Vec.pdf)
+
 Please visit [my Homepage](http://www.geog.ucsb.edu/~gengchen_mai/) for more information.
 
 ## Motivation
