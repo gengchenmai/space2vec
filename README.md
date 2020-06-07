@@ -28,6 +28,12 @@ To set up the code for space2vec for POI Type classfication, run `python spacegr
 ### Data
 You can find the POI type classification dataset in `spacegraph/data_collection/Place2Vec_center/`.
 
+1. `spacegraph/data_collection/Place2Vec_center/poi_type.json`: the POI type ID to POI type name;
+2. `spacegraph/data_collection/Place2Vec_center/pointset.pkl`: the total list of POI beng considered in the form: `(id, (X, Y), (Type1, Type2,...TypeM), training/validation/test)` where (X,Y) are projected coordinates of this POI;
+3. `spacegraph/data_collection/Place2Vec_center/neighborgraphs_train.pkl` (neighborgraphs_validation.pkl or neighborgraphs_test.pkl): the neighboring POI graph structure for training/validation/test in the form: `[CenterPT, [ContextPT1, ContextPT2, ..., ContextPTN], training/validation/test]`. CenterPT is the center POI id while ContextPTs are its nearby POI id. Note that for validation and test dataset, the center point corresponds to the POI with `validation/test` in `pointset.pkl`.
+
+
+
 ### Code Usage
 This code is implemented in Python 2.7
 All codes about the POI type classification task are in `spacegraph/spacegraph_codebase/`.
