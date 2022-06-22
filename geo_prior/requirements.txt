@@ -1,4 +1,4 @@
-numpy==1.16.4
+numpy==1.22.0
 pandas==0.24.2
 torchvision==0.4.0a0+6b959ee
 scipy==1.2.1
