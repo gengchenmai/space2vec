@@ -486,6 +486,6 @@ class JointRelativeGlobalDecoder(nn.Module):
                 # so we need to check the result type
                 aggs = aggs[0]
 
-        embeds = self.f_act(self.dropout(self.post_linear(aggs)))
+        embeds = self.f_act(self.dropout(self.post_linear(aggs.values)))
         return embeds
 
