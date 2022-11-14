@@ -38,6 +38,8 @@ pointset, feature_embedding = load_pointset(data_dir=args.data_dir,
 if args.cuda:
     pointset.feature_embed_lookup = cudify(feature_embedding)
 
+# make model directory
+os.makedirs(args.model_dir, exist_ok=True)
 
 # build NN model
 trainer = Trainer(args, pointset, train_ng_list, val_ng_list, test_ng_list, feature_embedding, console = True)

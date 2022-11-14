@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from spacegraph_codebase.utils import *
 from torch import optim
 from spacegraph_codebase.train_helper import run_train, run_eval, run_eval_per_type, run_joint_train
-
+from spacegraph_codebase.Place2Vec.cur_data_utils import load_pointset
 
 def make_args_parser():
     parser = ArgumentParser()
@@ -240,6 +240,136 @@ def make_args_combine(args):
     return args_combine
 
 
+def make_enc_dec(args, pointset=None, feature_embedding= None):
+    # make feature encoder
+    enc = get_encoder(pointset.feature_embed_lookup, feature_embedding, pointset, args.enc_agg)
+
+    if args.model_type == "relative" or args.model_type == "join" or args.model_type == "together":
+        # make relative space encoder
+        spa_enc = get_spa_encoder(
+            args,
+            model_type = args.model_type,
+            spa_enc_type=args.spa_enc, 
+            pointset = pointset,
+            spa_embed_dim=args.spa_embed_dim, 
+            coord_dim = 2, 
+            num_rbf_anchor_pts = args.num_rbf_anchor_pts,
+            rbf_kernal_size = args.rbf_kernal_size,
+            frequency_num = args.freq, 
+            max_radius = args.max_radius,
+            min_radius = args.min_radius,
+            f_act = args.spa_f_act,
+            freq_init = args.freq_init,
+            use_postmat=args.spa_enc_use_postmat)
+#                                 dropout = args.dropout,
+#                                 num_hidden_layer = args.num_hidden_layer, 
+#                                 hidden_dim = args.hidden_dim, 
+#                                 use_layn = args.use_layn, 
+#                                 skip_connection = args.skip_connection)
+    else:
+        spa_enc = None
+
+    if args.model_type == "global" or args.model_type == "join" or args.model_type == "together":
+        # make global space encoder
+        g_spa_enc = get_spa_encoder(
+            args,
+            model_type = args.model_type,
+            spa_enc_type=args.g_spa_enc, 
+            pointset = pointset,
+            spa_embed_dim=args.g_spa_embed_dim, 
+            coord_dim = 2, 
+            num_rbf_anchor_pts = args.num_rbf_anchor_pts,
+            rbf_kernal_size = args.rbf_kernal_size,
+            frequency_num = args.g_freq, 
+            max_radius = args.g_max_radius,
+            min_radius = args.g_min_radius,
+            f_act = args.g_spa_f_act,
+            freq_init = args.g_freq_init,
+            use_postmat=args.g_spa_enc_use_postmat)
+#                                 dropout = args.dropout,
+#                                 num_hidden_layer = args.num_hidden_layer, 
+#                                 hidden_dim = args.hidden_dim, 
+#                                 use_layn = args.use_layn, 
+#                                 skip_connection = args.skip_connection)
+    else:
+        g_spa_enc = None
+
+    # make decoder
+    if args.model_type == "relative" or args.model_type == "join" or args.model_type == "together":
+
+        # make query embedding initial decoder
+        init_dec = get_context_decoder(dec_type=args.init_decoder_atten_type, 
+                            query_dim=args.embed_dim, 
+                            key_dim=args.embed_dim, 
+                            spa_embed_dim=args.spa_embed_dim, 
+                            g_spa_embed_dim=args.g_spa_embed_dim,
+                            have_query_embed = False, 
+                            num_attn = args.init_decoder_atten_num, 
+                            activation = args.init_decoder_atten_act, 
+                            f_activation = args.init_decoder_atten_f_act, 
+                            layn = args.init_decoder_use_layn, 
+                            use_postmat = args.init_decoder_use_postmat,
+                            dropout = args.dropout)
+
+        if args.use_dec == "T":
+            # make decoder
+            dec = get_context_decoder(dec_type=args.decoder_atten_type, 
+                                query_dim=args.embed_dim, 
+                                key_dim=args.embed_dim, 
+                                spa_embed_dim=args.spa_embed_dim, 
+                                g_spa_embed_dim=args.g_spa_embed_dim,
+                                have_query_embed = True, 
+                                num_attn = args.decoder_atten_num, 
+                                activation = args.decoder_atten_act, 
+                                f_activation = args.decoder_atten_f_act, 
+                                layn = args.decoder_use_layn, 
+                                use_postmat = args.decoder_use_postmat,
+                                dropout = args.dropout)
+        else:
+            dec = None
+
+        if args.model_type == "join":
+            joint_dec = JointRelativeGlobalDecoder(feature_embed_dim = args.embed_dim, 
+                            f_act = args.act, 
+                            dropout = args.dropout,
+                            join_type = args.join_dec_type)
+        else:
+            joint_dec = None
+
+    else:
+        init_dec = None
+        dec = None
+        joint_dec = None
+
+    if args.model_type == "global" or args.model_type == "join":
+        # make global space decoder
+        g_spa_dec = DirectPositionEmbeddingDecoder(g_spa_embed_dim=args.g_spa_embed_dim, 
+                            feature_embed_dim=args.embed_dim, 
+                            f_act = args.act, 
+                            dropout = args.dropout)
+    else:
+        g_spa_dec = None
+
+
+    # if args.model_type == "global" or args.model_type == "relative":
+    # make encoder encoder
+    enc_dec = get_enc_dec(model_type=args.model_type, 
+                        pointset=pointset, 
+                        enc = enc, 
+                        spa_enc = spa_enc, 
+                        g_spa_enc = g_spa_enc, 
+                        g_spa_dec = g_spa_dec, 
+                        init_dec=init_dec, 
+                        dec=dec, 
+                        joint_dec=joint_dec, 
+                        activation = args.act, 
+                        num_context_sample = args.num_context_sample, 
+                        num_neg_resample = 10)
+
+    if args.cuda:
+        enc_dec.cuda()
+
+    return enc_dec
 
 class Trainer():
     """
@@ -270,133 +400,7 @@ class Trainer():
             self.optimizer = None
             return
 
-        # make feature encoder
-        self.enc = get_encoder(pointset.feature_embed_lookup, feature_embedding, pointset, args.enc_agg)
-
-        if args.model_type == "relative" or args.model_type == "join" or args.model_type == "together":
-            # make relative space encoder
-            self.spa_enc = get_spa_encoder(
-                args,
-                model_type = args.model_type,
-                spa_enc_type=args.spa_enc, 
-                pointset = pointset,
-                spa_embed_dim=args.spa_embed_dim, 
-                coord_dim = 2, 
-                num_rbf_anchor_pts = args.num_rbf_anchor_pts,
-                rbf_kernal_size = args.rbf_kernal_size,
-                frequency_num = args.freq, 
-                max_radius = args.max_radius,
-                min_radius = args.min_radius,
-                f_act = args.spa_f_act,
-                freq_init = args.freq_init,
-                use_postmat=args.spa_enc_use_postmat)
-#                                 dropout = args.dropout,
-#                                 num_hidden_layer = args.num_hidden_layer, 
-#                                 hidden_dim = args.hidden_dim, 
-#                                 use_layn = args.use_layn, 
-#                                 skip_connection = args.skip_connection)
-        else:
-            self.spa_enc = None
-
-        if args.model_type == "global" or args.model_type == "join" or args.model_type == "together":
-            # make global space encoder
-            self.g_spa_enc = get_spa_encoder(
-                args,
-                model_type = args.model_type,
-                spa_enc_type=args.g_spa_enc, 
-                pointset = pointset,
-                spa_embed_dim=args.g_spa_embed_dim, 
-                coord_dim = 2, 
-                num_rbf_anchor_pts = args.num_rbf_anchor_pts,
-                rbf_kernal_size = args.rbf_kernal_size,
-                frequency_num = args.g_freq, 
-                max_radius = args.g_max_radius,
-                min_radius = args.g_min_radius,
-                f_act = args.g_spa_f_act,
-                freq_init = args.g_freq_init,
-                use_postmat=args.g_spa_enc_use_postmat)
-#                                 dropout = args.dropout,
-#                                 num_hidden_layer = args.num_hidden_layer, 
-#                                 hidden_dim = args.hidden_dim, 
-#                                 use_layn = args.use_layn, 
-#                                 skip_connection = args.skip_connection)
-        else:
-            self.g_spa_enc = None
-
-        # make decoder
-        if args.model_type == "relative" or args.model_type == "join" or args.model_type == "together":
-
-            # make query embedding initial decoder
-            self.init_dec = get_context_decoder(dec_type=args.init_decoder_atten_type, 
-                                query_dim=args.embed_dim, 
-                                key_dim=args.embed_dim, 
-                                spa_embed_dim=args.spa_embed_dim, 
-                                g_spa_embed_dim=args.g_spa_embed_dim,
-                                have_query_embed = False, 
-                                num_attn = args.init_decoder_atten_num, 
-                                activation = args.init_decoder_atten_act, 
-                                f_activation = args.init_decoder_atten_f_act, 
-                                layn = args.init_decoder_use_layn, 
-                                use_postmat = args.init_decoder_use_postmat,
-                                dropout = args.dropout)
-
-            if args.use_dec == "T":
-                # make decoder
-                self.dec = get_context_decoder(dec_type=args.decoder_atten_type, 
-                                    query_dim=args.embed_dim, 
-                                    key_dim=args.embed_dim, 
-                                    spa_embed_dim=args.spa_embed_dim, 
-                                    g_spa_embed_dim=args.g_spa_embed_dim,
-                                    have_query_embed = True, 
-                                    num_attn = args.decoder_atten_num, 
-                                    activation = args.decoder_atten_act, 
-                                    f_activation = args.decoder_atten_f_act, 
-                                    layn = args.decoder_use_layn, 
-                                    use_postmat = args.decoder_use_postmat,
-                                    dropout = args.dropout)
-            else:
-                self.dec = None
-
-            if args.model_type == "join":
-                self.joint_dec = JointRelativeGlobalDecoder(feature_embed_dim = args.embed_dim, 
-                                f_act = args.act, 
-                                dropout = args.dropout,
-                                join_type = args.join_dec_type)
-            else:
-                self.joint_dec = None
-
-        else:
-            self.init_dec = None
-            self.dec = None
-            self.joint_dec = None
-
-        if args.model_type == "global" or args.model_type == "join":
-            # make global space decoder
-            self.g_spa_dec = DirectPositionEmbeddingDecoder(g_spa_embed_dim=args.g_spa_embed_dim, 
-                                feature_embed_dim=args.embed_dim, 
-                                f_act = args.act, 
-                                dropout = args.dropout)
-        else:
-            self.g_spa_dec = None
-
-
-        # if args.model_type == "global" or args.model_type == "relative":
-        # make encoder encoder
-        self.enc_dec = get_enc_dec(model_type=args.model_type, 
-                            pointset=pointset, 
-                            enc = self.enc, 
-                            spa_enc = self.spa_enc, 
-                            g_spa_enc = self.g_spa_enc, 
-                            g_spa_dec = self.g_spa_dec, 
-                            init_dec=self.init_dec, 
-                            dec=self.dec, 
-                            joint_dec=self.joint_dec, 
-                            activation = args.act, 
-                            num_context_sample = args.num_context_sample, 
-                            num_neg_resample = 10)
-
-        if args.cuda:
-            self.enc_dec.cuda()
+        self.enc_dec = make_enc_dec(self.args, pointset, feature_embedding)
 
         if args.opt == "sgd":
             self.optimizer = optim.SGD(filter(lambda p : p.requires_grad, self.enc_dec.parameters()), lr=args.lr, momentum=0)
