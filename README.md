@@ -83,7 +83,7 @@ To simplify the usage on your own point data, we provide further example data in
 
 ```
 cd spacegraph
-prepare_own_data.py  -d data_collection/example_pois.geojson 
+python data_collection/prepare_own_data.py  -d data_collection/example_pois.geojson 
 ```
 Here, you can replace the -d argument with the path to your own data.
 
@@ -94,7 +94,7 @@ sh global_train_example_pois.sh
 Finally, we provide a [script](spacegraph/spacegraph_codebase/test.py) to use the trained model for generating embeddings of new points.
 Run the following line with the path to your test data and the path to the directory with your trained model (per default `spacegraph/model_dir/global_example_data`) 
 ```
-python test.py [-h] [-d DATA_PATH] [-m MODEL_PATH]
+python spacegraph_codebase/test.py [-h] [-d DATA_PATH] [-m MODEL_PATH]
 ```
 
 ## Geo-Aware Fine-Grained Image Classification Task
