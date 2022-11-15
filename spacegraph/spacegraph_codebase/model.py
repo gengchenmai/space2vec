@@ -514,14 +514,6 @@ class GlobalPositionEncoderDecoder(nn.Module):
             # random sample each context points in NeighborGraph()
             self.sample_neg_pts(ng_list)
 
-        # coords: shape (batch_size, 1, 2)
-        # coords = self.get_center_pt_spa_coords(ng_list)
-        # # center_g_spa_embeds: shape (batch_size, 1, g_spa_embed_dim)
-        # center_g_spa_embeds = self.g_spa_enc(coords)
-        # # center_g_spa_embeds: shape (batch_size, g_spa_embed_dim)
-        # center_g_spa_embeds = center_g_spa_embeds.squeeze(1)
-        # # center_pred_embed: shape (batch_size, embed_dim)
-        # center_pred_embed = self.g_spa_dec(center_g_spa_embeds)
         center_pred_embed = self.predict(ng_list)
 
         # center_embed: shape (batch_size, embed_dim)

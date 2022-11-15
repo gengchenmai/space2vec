@@ -79,15 +79,15 @@ Results:
 
 ### Training and testing on own data
 
-To simplify the usage on your own point data, we provide further example data in `geojson` format in the [data_collection](spacegraph/data_collection) folder. To train a model on your own data, it first needs to be converted to the same format as our [example data](spacegraph/data_collection/example_pois.geojson), specifically, you need a GeoDataFrame with a *projected* geometry, with a column id, and a variable number of label-columns named `poi_type_1`, `poi_type_2`, etc. Then, run the following steps:
+To simplify the usage on your own point data, we provide further example data in `geojson` format in the [data_collection](spacegraph/data_collection) folder. To train a model on your own data, it first needs to be converted to the same format as our [example data](spacegraph/data_collection/example_pois.geojson), specifically, you need a GeoDataFrame with a *projected* geometry, and with a column named `id`, and a variable number of columns named `poi_type_1`, `poi_type_2`, etc, containing the categories that each POI belongs to. Then, run the following steps:
 
 ```
 cd spacegraph
 python data_collection/prepare_own_data.py  -d data_collection/example_pois.geojson 
 ```
-Here, you can replace the -d argument with the path to your own data.
+Here, you can replace the -d argument with the path to your own data. The script preprocesses the data and dumps the preprocessed files in a new folder `data_collection/example_poi_data` (or specify the output directory with the -o flag)
 
-This only preprocesses the data. Then, use one of the bash scripts for training, e.g.
+Then, use one of the bash scripts for training (global / relative / join), e.g.
 ```
 sh global_train_example_pois.sh
 ```

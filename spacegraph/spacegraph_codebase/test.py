@@ -75,7 +75,8 @@ if __name__ == "__main__":
     data_dir = args.data_path
 
     neighborgraphs = pickle.load(
-        open(data_dir + "/neighborgraphs_test.pkl", "rb"), encoding='latin1'
+        open(os.path.join(data_dir, "neighborgraphs_test.pkl"), "rb"),
+        encoding='latin1'
     )
     num_poi_type, point_list = pickle.load(
         open(os.path.join(data_dir, "pointset.pkl"), "rb"), encoding='latin1'
