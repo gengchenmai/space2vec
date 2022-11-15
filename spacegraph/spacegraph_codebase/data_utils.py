@@ -1,4 +1,4 @@
-import cPickle as pickle
+import pickle
 import torch
 from collections import OrderedDict, defaultdict
 import random
@@ -8,9 +8,8 @@ import numpy as np
 
 from spacegraph_codebase.data import PointSet, NeighborGraph, Point 
 
-
 def load_ng(data_file):
-    raw_info = pickle.load(open(data_file, "rb"))
+    raw_info = pickle.load(open(data_file, "rb"), encoding='latin1')
     return [NeighborGraph.deserialize(info) for info in raw_info]
 
 

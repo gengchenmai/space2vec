@@ -6,7 +6,6 @@ import torch.nn.functional as F
 import random
 import numpy as np
 from collections import defaultdict
-from sets import Set
 
 from spacegraph_codebase.model import NeighGraphEncoderDecoder
 
@@ -92,7 +91,7 @@ def run_eval_per_type(model, pointset, ng_list, iteration, logger, typeid2root =
     for i, ng in enumerate(ng_list):
         type_list = list(pointset.pt_dict[ng.center_pt].features)
         if typeid2root is not None:
-            type_list = list(Set([typeid2root[typeid] for typeid in type_list]))
+            type_list = list(set([typeid2root[typeid] for typeid in type_list]))
         for pt_type in type_list:
             if pt_type not in type2rank:
                 type2rank[pt_type] = []
@@ -164,11 +163,6 @@ def get_batch_ranks(model, ng_list, do_full_eval = True):
         neg = np.random.randn(batch_size, num_neg_sample)
         scores = np.concatenate((pos, neg), axis=1)
 
-
-    
-
-    
-
     batch_size, num_pt = scores.shape
 
     # argsort(): sort the dot product scores for each prediction list, then each rank position is their original index
@@ -192,7 +186,7 @@ def run_train(model, optimizer, train_ng_list, val_ng_list, test_ng_list, logger
 
     if model is not None:
         random.shuffle(train_ng_list)
-        for i in xrange(max_iter):
+        for i in range(max_iter):
             # switch to training mode
             model.train()
             optimizer.zero_grad()

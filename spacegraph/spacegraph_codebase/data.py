@@ -2,7 +2,6 @@ from collections import OrderedDict, defaultdict
 import random
 import numpy as np
 import re
-from sets import Set
 
 def _random_sampling(item_tuple, num_sample):
     '''
@@ -129,9 +128,9 @@ class PointSet():
 
         self.pt_dict = defaultdict()
         self.pt_mode = defaultdict()
-        self.pt_mode["training"] = Set()
-        self.pt_mode["validation"] = Set()
-        self.pt_mode["test"] = Set()
+        self.pt_mode["training"] = set()
+        self.pt_mode["validation"] = set()
+        self.pt_mode["test"] = set()
         
         _, _, features, _ = point_list[0]
         init_num_feature = len(features)
@@ -204,7 +203,7 @@ class PointSet():
             a list of negative samples id
         '''
         data_mode = neighbor_tuple[2]
-        pt_list = list(self.pt_mode[data_mode]-Set([neighbor_tuple[0]]+list(neighbor_tuple[1])))
+        pt_list = list(self.pt_mode[data_mode]-set([neighbor_tuple[0]]+list(neighbor_tuple[1])))
         if len(pt_list) >= neg_sample_num:
             return list(np.random.choice(pt_list, neg_sample_num, replace=False))
         else:

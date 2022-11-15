@@ -35,7 +35,6 @@ You can find the POI type classification dataset in `spacegraph/data_collection/
 
 
 ### Code Usage
-This code is implemented in Python 2.7
 All codes about the POI type classification task are in `spacegraph/spacegraph_codebase/`.
 
 #### Location Modeling (See Section 5.1.1 and 5.1.2 in [our ICLR 2020 paper](https://openreview.net/forum?id=rJljdh4KDH))
@@ -77,6 +76,26 @@ Results:
 <p align="center">
   <img src="res_fig/context_modeling.png" alt="context_modeling" width="1000" />
 </p>
+
+### Training and testing on own data
+
+To simplify the usage on your own point data, we provide further example data in `geojson` format in the [data_collection](spacegraph/data_collection) folder. To train a model on your own data, it first needs to be converted to the same format as our [example data](spacegraph/data_collection/example_pois.geojson), specifically, you need a GeoDataFrame with a *projected* geometry, and with a column named `id`, and a variable number of columns named `poi_type_1`, `poi_type_2`, etc, containing the categories that each POI belongs to. Then, run the following steps:
+
+```
+cd spacegraph
+python data_collection/prepare_own_data.py  -d data_collection/example_pois.geojson 
+```
+Here, you can replace the -d argument with the path to your own data. The script preprocesses the data and dumps the preprocessed files in a new folder `data_collection/example_poi_data` (or specify the output directory with the -o flag)
+
+Then, use one of the bash scripts for training (global / relative / join), e.g.
+```
+sh global_train_example_pois.sh
+```
+Finally, we provide a [script](spacegraph/spacegraph_codebase/test.py) to use the trained model for generating embeddings of new points.
+Run the following line with the path to your test data and the path to the directory with your trained model (per default `spacegraph/model_dir/global_example_data`) 
+```
+python spacegraph_codebase/test.py [-h] [-d DATA_PATH] [-m MODEL_PATH]
+```
 
 ## Geo-Aware Fine-Grained Image Classification Task
 

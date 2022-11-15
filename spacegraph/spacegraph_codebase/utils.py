@@ -3,7 +3,6 @@ import torch.nn as nn
 from torch.nn import init
 import torch.nn.functional as F
 
-import cPickle as pickle
 import logging
 import random
 import time
@@ -75,7 +74,7 @@ def get_encoder(feature_embed_lookup, feature_embedding, pointset, enc_agg):
     return enc
 
 def get_ffn(args, input_dim, f_act, context_str = ""):
-    print("Create 3 FeedForward NN!!!!!!!!!!")
+    # print("Create 3 FeedForward NN!!!!!!!!!!")
     if args.use_layn == "T":
         use_layn = True
     else:

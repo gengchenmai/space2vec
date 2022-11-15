@@ -4,7 +4,6 @@ from torch.nn import init
 import torch.nn.functional as F
 
 import os
-import cPickle as pickle
 from collections import OrderedDict, defaultdict
 import random
 import json
@@ -54,12 +53,23 @@ class NeighGraphEncoderDecoder(nn.Module):
             neg_embeds: the N negative sampled center points feature embedding
                     shape (batch_size, num_neg_sample, embed_dim)
         '''
-        # random sample each context points in NeighborGraph()
-        self.sample_context_pts(ng_list)
-
         if do_full_eval == False:
             # random sample each context points in NeighborGraph()
             self.sample_neg_pts(ng_list)
+
+        center_pred_embed = self.predict(ng_list)
+
+        # center_embed: shape (batch_size, embed_dim)
+        center_embed = self.get_center_pt_embed(ng_list)
+
+        # neg_embeds: shape (batch_size, num_neg_sample, embed_dim)
+        neg_embeds = self.get_neg_pt_embed(ng_list, do_full_eval)
+
+        return center_pred_embed, center_embed, neg_embeds
+    
+    def predict(self, ng_list):
+        # random sample each context points in NeighborGraph()
+        self.sample_context_pts(ng_list)
 
         if self.spa_enc != None:
             # get all context-center point (deltaX, deltaY) list
@@ -82,14 +92,7 @@ class NeighGraphEncoderDecoder(nn.Module):
             center_pred_embed = self.dec(key_embeds, key_spa_embeds, query_embed = init_query_embed)
         else:
             center_pred_embed = init_query_embed
-
-        # center_embed: shape (batch_size, embed_dim)
-        center_embed = self.get_center_pt_embed(ng_list)
-
-        # neg_embeds: shape (batch_size, num_neg_sample, embed_dim)
-        neg_embeds = self.get_neg_pt_embed(ng_list, do_full_eval)
-
-        return center_pred_embed, center_embed, neg_embeds
+        return center_pred_embed
 
     def get_batch_scores(self, ng_list, do_full_eval = True):
         '''
@@ -262,12 +265,25 @@ class GlobalPositionNeighGraphEncoderDecoder(nn.Module):
             neg_embeds: the N negative sampled center points feature embedding
                     shape (batch_size, num_neg_sample, embed_dim)
         '''
-        # random sample each context points in NeighborGraph()
-        self.sample_context_pts(ng_list)
-
         if do_full_eval == False:
             # random sample each context points in NeighborGraph()
             self.sample_neg_pts(ng_list)
+
+        center_pred_embed = self.predict(ng_list)
+
+        # 2. get the true center embedding
+        # center_embed: shape (batch_size, embed_dim)
+        center_embed = self.get_center_pt_embed(ng_list)
+
+        # 3. get the true negative embedding
+        # neg_embeds: shape (batch_size, num_neg_sample, embed_dim)
+        neg_embeds = self.get_neg_pt_embed(ng_list, do_full_eval)
+
+        return center_pred_embed, center_embed, neg_embeds
+
+    def predict(self, ng_list):
+        # random sample each context points in NeighborGraph()
+        self.sample_context_pts(ng_list)
 
         # 1. predict the center pt feature embedding from context points
         if self.spa_enc != None:
@@ -302,21 +318,7 @@ class GlobalPositionNeighGraphEncoderDecoder(nn.Module):
             center_pred_embed = self.dec(key_embeds, key_spa_embeds, center_g_spa_embeds, query_embed = init_query_embed)
         else:
             center_pred_embed = init_query_embed
-
-        
-        
-
-
-
-        # 2. get the true center embedding
-        # center_embed: shape (batch_size, embed_dim)
-        center_embed = self.get_center_pt_embed(ng_list)
-
-        # 3. get the true negative embedding
-        # neg_embeds: shape (batch_size, num_neg_sample, embed_dim)
-        neg_embeds = self.get_neg_pt_embed(ng_list, do_full_eval)
-
-        return center_pred_embed, center_embed, neg_embeds
+        return center_pred_embed
 
     def get_batch_scores(self, ng_list, do_full_eval = True):
         '''
@@ -512,14 +514,7 @@ class GlobalPositionEncoderDecoder(nn.Module):
             # random sample each context points in NeighborGraph()
             self.sample_neg_pts(ng_list)
 
-        # coords: shape (batch_size, 1, 2)
-        coords = self.get_center_pt_spa_coords(ng_list)
-        # center_g_spa_embeds: shape (batch_size, 1, g_spa_embed_dim)
-        center_g_spa_embeds = self.g_spa_enc(coords)
-        # center_g_spa_embeds: shape (batch_size, g_spa_embed_dim)
-        center_g_spa_embeds = center_g_spa_embeds.squeeze(1)
-        # center_pred_embed: shape (batch_size, embed_dim)
-        center_pred_embed = self.g_spa_dec(center_g_spa_embeds)
+        center_pred_embed = self.predict(ng_list)
 
         # center_embed: shape (batch_size, embed_dim)
         center_embed = self.get_center_pt_embed(ng_list)
@@ -528,6 +523,16 @@ class GlobalPositionEncoderDecoder(nn.Module):
         neg_embeds = self.get_neg_pt_embed(ng_list, do_full_eval)
 
         return center_pred_embed, center_embed, neg_embeds
+
+    def predict(self, ng_list):
+        coords = self.get_center_pt_spa_coords(ng_list)
+        # center_g_spa_embeds: shape (batch_size, 1, g_spa_embed_dim)
+        center_g_spa_embeds = self.g_spa_enc(coords)
+        # center_g_spa_embeds: shape (batch_size, g_spa_embed_dim)
+        center_g_spa_embeds = center_g_spa_embeds.squeeze(1)
+        # center_pred_embed: shape (batch_size, embed_dim)
+        center_pred_embed = self.g_spa_dec(center_g_spa_embeds)
+        return center_pred_embed
 
     def get_pred_embed_from_coords(self, coords):
         '''
@@ -694,12 +699,25 @@ class JointRelativeGlobalEncoderDecoder(nn.Module):
             neg_embeds: the N negative sampled center points feature embedding
                     shape (batch_size, num_neg_sample, embed_dim)
         '''
-        # random sample each context points in NeighborGraph()
-        self.sample_context_pts(ng_list)
-
         if do_full_eval == False:
             # random sample each context points in NeighborGraph()
             self.sample_neg_pts(ng_list)
+
+        center_pred_embed = self.predict(ng_list)
+
+        # 4. get the true center embedding
+        # center_embed: shape (batch_size, embed_dim)
+        center_embed = self.get_center_pt_embed(ng_list)
+
+        # 5. get the true negative embedding
+        # neg_embeds: shape (batch_size, num_neg_sample, embed_dim)
+        neg_embeds = self.get_neg_pt_embed(ng_list, do_full_eval)
+
+        return center_pred_embed, center_embed, neg_embeds
+
+    def predict(self, ng_list):
+        # random sample each context points in NeighborGraph()
+        self.sample_context_pts(ng_list)
 
         # 1. predict the center pt feature embedding from context points
         if self.spa_enc != None:
@@ -738,16 +756,7 @@ class JointRelativeGlobalEncoderDecoder(nn.Module):
         # 3. Given the predict center embedding from context, and the center position embedding
         # predict final feature embedding
         center_pred_embed = self.joint_dec(center_pred_embed_1, center_pred_embed_2)
-
-        # 4. get the true center embedding
-        # center_embed: shape (batch_size, embed_dim)
-        center_embed = self.get_center_pt_embed(ng_list)
-
-        # 5. get the true negative embedding
-        # neg_embeds: shape (batch_size, num_neg_sample, embed_dim)
-        neg_embeds = self.get_neg_pt_embed(ng_list, do_full_eval)
-
-        return center_pred_embed, center_embed, neg_embeds
+        return center_pred_embed
 
     def get_batch_scores(self, ng_list, do_full_eval = True):
         '''

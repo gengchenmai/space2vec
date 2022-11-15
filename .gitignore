@@ -1,3 +1,8 @@
+# Project-specific
+*code-workspace
+model_dir/
+*.egg-info
+
 # Compiled source #
 ###################
 *.com

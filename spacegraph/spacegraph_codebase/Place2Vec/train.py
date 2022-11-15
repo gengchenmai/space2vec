@@ -38,17 +38,26 @@ pointset, feature_embedding = load_pointset(data_dir=args.data_dir,
 if args.cuda:
     pointset.feature_embed_lookup = cudify(feature_embedding)
 
+# make model directory
+os.makedirs(args.model_dir, exist_ok=True)
 
 # build NN model
 trainer = Trainer(args, pointset, train_ng_list, val_ng_list, test_ng_list, feature_embedding, console = True)
 
-trainer.logger.info("All argusment:")
+trainer.logger.info("All arguments:")
 for arg in vars(args):
     trainer.logger.info("{}: {}".format(arg, getattr(args, arg)))
 
 # load model
 if args.load_model:
-	trainer.load_model()
+    trainer.logger.info("LOADING MODEL")
+    trainer.load_model()
+
+# Save parameters
+config = vars(args)
+with open(os.path.join(args.model_dir, "config.json"), "w") as outfile:
+    json.dump(config, outfile)
 
 # train NN model
 trainer.train()
+# trainer.eval_model()
